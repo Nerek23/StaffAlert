@@ -1,5 +1,5 @@
 var scriptName = "StaffAlert";
-var scriptAuthor = "By Virus";
+var scriptAuthor = "By Nerek/Virus";
 var scriptVersion = 1.0;
 
 function StaffAlertModule() {

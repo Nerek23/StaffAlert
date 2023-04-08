@@ -1,4 +1,4 @@
-# StaffAlert
+# StaffAlert for Minecraft
 
 Hello everyone!
 

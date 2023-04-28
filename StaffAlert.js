@@ -1,63 +1,97 @@
-var scriptName = "StaffAlert";
-var scriptAuthor = "By Nerek/Virus";
-var scriptVersion = 1.0;
+// Updated to api_version = 2.
 
-function StaffAlertModule() {
-    var Lobby = value.createBoolean("AutoHub", true);
-    this.getName = function() {
-        return "StaffAlert";
-    }
+var screenWidth = mc.displayWidth;
+var screenHeight = mc.displayHeight;
 
-    this.getDescription = function() {
-        return "StaffAlert pa Universocraft";
-    }
-
-    this.getCategory = function() {
-        return "Misc";
-    }
-
-    var putitas = ["iJulietaARG_", "ImFerchus_Idk", "iMikeJR_", "iPumba_", "iZhunder_", "JuliCarles", "OnlyFernando", "Tauchet", "_iLoriToG_", "_JuPo_", "ImFokuh_Idk", "ImOvee_Idk",  "p3rrit0kawai2323", "iSpitlz_", "9"] 
-
-    this.onUpdate = function() {        
-         playerCollection = mc.getNetHandler().getPlayerInfoMap()
-         playerCollection.forEach(function(player) {
-            putitas.forEach(function(putitas) {
-                if (putitas != mc.getSession().getUsername() && putitas == player.getGameProfile().getName()) {
-                    if(mc.thePlayer.ticksExisted % 12 == 0) {
-                        if(Lobby.get()) {
-                            mc.thePlayer.sendChatMessage("/lobby");
-                        }
-
-                        chat.print("§5§lStaff: " + "§5§l " + putitas)
-
-                     
-                        
+var script = registerScript({
+    name: 'StaffAlert',
+    version: '1.1',
+    authors: ['Nerek/Virus']
     
+});
 
-                    }
+script.registerModule({
+    name: 'StaffAlert',
+    category: 'Misc', 
+    description: 'Detect staff members.',
+    settings: {
+        x: Setting.float({
+            name: 'Text Position X',
+            min: 0,
+            max: screenWidth,
+            default: 10
+        }),
+        y: Setting.float({
+            name: 'Text Position Y',
+            min: 0,
+            max: screenHeight,
+            default: 10
+        }),
+        AutoLobby: Setting.boolean({
+            name: 'Auto Lobby',
+            default: false
+        }),
+        debugMode: Setting.boolean({
+            name: 'Debug Mode',
+            default: false
+        })
+        
+    }
+
+}, function (module) {
+    /*
+         Here you can add or remove staff members that should be detected. Simply add the staff nicknames,
+         and if you want to remove them, just remove the nickname.
+         Example: var staffMembers = ['Patata1', 'EazyManco', 'Titulina', etc...];
+
+         ↓  ↓  ↓  
+    */
+
+    var staffMembers = ['UserName1', 'UserName2']; 
+
+    var sentToLobby = {};
+    
+    module.on("render2D", function (event) {
+      
+        var x = module.settings.x.get();
+        var y = module.settings.y.get();
+    
+        staffMembers.forEach(function(staffMember) {
+            if (mc.theWorld.getPlayerEntityByName(staffMember) != null) {
+                mc.fontRendererObj.drawStringWithShadow('§b§lStaff: §f' + staffMember, x, y, 0xffffff);
+                y += 10;
+    
+                if (module.settings.AutoLobby.get() && !sentToLobby[staffMember]) {
+                    mc.thePlayer.sendChatMessage('/lobby');
+                    Chat.print('§b§lStaff: §f' + staffMember);
+                    
+                    sentToLobby[staffMember] = true;
+                } else if (!module.settings.AutoLobby.get() && sentToLobby[staffMember]) {
+                    sentToLobby[staffMember] = false;
                 }
-            });
+    
+            } else if (sentToLobby[staffMember]) {
+                sentToLobby[staffMember] = false;
+            }
 
-         });
+            if(module.settings.debugMode.get()) {
+                Chat.print('§2Detecting');
+            }
+        });
+    });
 
-    }
-
-    this.addValues = function(virus) {
-        virus.add(Lobby);
-    }
-
-
-
-}
-
-var staffalertModule = new StaffAlertModule();
-var staffalertModuleClient;
-
-function onEnable() {
-    staffalertModuleClient = moduleManager.registerModule(staffalertModule);
-}
-
-function onDisable() {
-    moduleManager.unregisterModule(staffalertModuleClient);
-}
-
+    script.registerCommand({
+        name: "StaffAdd",
+        aliases: ["Staff"]
+    }, function(command) {
+        command.on("execute", function(args) {
+            if (args.length > 1) {
+                staffMembers.push(args[1]);
+                Chat.print("§aUser " + "§b" + args[1] + " §ahas been added to the staff alert list.");
+            } else {
+                Chat.print("§cPlease provide a username to add.");
+            }
+        });
+    });
+    
+});
